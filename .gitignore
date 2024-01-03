@@ -21,3 +21,7 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# npm and pnpm
+package-lock.json
+pnpm-lock.yaml
