@@ -1,7 +1,11 @@
-import { styled } from '@mui/material';
-import React, { useEffect, useRef, useState } from 'react';
+import { styled, useTheme } from '@mui/material';
+import { fabric } from 'fabric';
+import React, { useEffect, useRef } from 'react';
+import { v4 as uuidV4 } from 'uuid';
 
-interface CanvasProps {}
+interface CanvasProps {
+  id?: string;
+}
 
 const CanvasContainer = styled('div')`
   width: 100%;
@@ -11,44 +15,82 @@ const CanvasContainer = styled('div')`
 
 const StyledCanvas = styled('canvas')`
   width: 100%;
+  height: 100%;
 `;
 
-const Canvas: React.FC<CanvasProps> = () => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+const Canvas: React.FC<CanvasProps> = ({ id = `canvas_${uuidV4()}` }) => {
+  const canvasRef = useRef<fabric.Canvas | null>(null);
+  const theme = useTheme();
+
+  // Function to draw grid
+  const drawGrid = (canvas: fabric.Canvas, gridSize = 50) => {
+    const color = theme.palette.grey[100];
+    const width = canvas.getWidth();
+    const height = canvas.getHeight();
+    for (let i = 0; i < width / gridSize; i++) {
+      canvas.add(
+        new fabric.Line([i * gridSize, 0, i * gridSize, height], {
+          stroke: color,
+          selectable: false,
+        })
+      );
+      canvas.add(
+        new fabric.Line([0, i * gridSize, width, i * gridSize], {
+          stroke: color,
+          selectable: false,
+        })
+      );
+    }
+  };
 
   useEffect(() => {
-    const canvas = canvasRef.current;
+    const canvasElement = document.getElementById(id) as HTMLCanvasElement;
+    if (!canvasElement) return;
 
-    const resizeCanvas = () => {
-      if (canvas) {
-        // Set the canvas size to match the parent container size
-        canvas.width = canvas.parentElement!.clientWidth;
-        canvas.height = canvas.parentElement!.clientHeight;
+    const canvas = new fabric.Canvas(canvasElement, {
+      width: canvasElement.clientWidth,
+      height: canvasElement.clientHeight,
+    });
 
-        // Update the canvasSize state
-        setCanvasSize({
-          width: canvas.width,
-          height: canvas.height,
-        });
-      }
-    };
+    canvasRef.current = canvas;
 
-    // Call the resizeCanvas function initially
-    resizeCanvas();
+    // Draw grid
+    drawGrid(canvas);
 
-    // Add an event listener for window resize
-    window.addEventListener('resize', resizeCanvas);
+    const rect = new fabric.Rect({
+      width: 100,
+      height: 100,
+      fill: 'red',
+      left: 100,
+      top: 100,
+    });
 
-    // Remove the event listener when the component unmounts
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-    };
-  }, []);
+    // Mouse wheel event for zooming
+    canvas.on('mouse:wheel', function (opt) {
+      const delta = opt.e.deltaY;
+      let zoom = canvas.getZoom();
+      zoom *= 0.999 ** delta;
+      if (zoom > 20) zoom = 20;
+      if (zoom < 1) zoom = 1;
+
+      // Get the point under the mouse
+      const pointer = canvas.getPointer(opt.e);
+      const point = { x: pointer.x, y: pointer.y };
+
+      // Calculate zoom values around the cursor
+      const zoomPoint = new fabric.Point(point.x, point.y);
+      canvas.zoomToPoint(zoomPoint, zoom);
+
+      opt.e.preventDefault();
+      opt.e.stopPropagation();
+    });
+
+    canvas.add(rect);
+  }, [id]);
 
   return (
     <CanvasContainer>
-      <StyledCanvas ref={canvasRef}></StyledCanvas>
+      <StyledCanvas id={id}></StyledCanvas>
     </CanvasContainer>
   );
 };
