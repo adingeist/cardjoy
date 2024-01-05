@@ -1,10 +1,10 @@
 import { styled, useTheme } from '@mui/material';
 import { fabric } from 'fabric';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { v4 as uuidV4 } from 'uuid';
+import { drawGrid } from './drawGrid';
 import { enableScrollZoom } from './enableScrollZoom';
 import { limitViewport } from './limitViewport';
-import { drawGrid } from './drawGrid';
 
 interface CanvasProps {
   id?: string;
