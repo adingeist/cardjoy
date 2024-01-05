@@ -1,30 +1,5 @@
 import { fabric } from 'fabric';
-
-/**
- * Limits the viewport to the canvas size to prevent the user from scrolling
- * outside the canvas.
- */
-const limitViewport = (canvas: fabric.Canvas) => {
-  const width = canvas.getWidth();
-  const height = canvas.getHeight();
-  const zoom = canvas.getZoom();
-  const xMin = (width - width * zoom) / 2;
-  const xMax = (width * zoom - width) / 2;
-  const yMin = (height - height * zoom) / 2;
-  const yMax = (height * zoom - height) / 2;
-
-  const viewportTransform = canvas.viewportTransform;
-
-  if (!viewportTransform) {
-    return;
-  }
-
-  // Limit x and y to prevent the user from scrolling outside the canvas
-  // viewportTransform[4] is x, viewportTransform[5] is y
-  viewportTransform[4] = Math.min(xMax, Math.max(viewportTransform[4], xMin));
-  viewportTransform[5] = Math.min(yMax, Math.max(viewportTransform[5], yMin));
-  canvas.setViewportTransform(viewportTransform);
-};
+import { limitViewport } from './limitViewport';
 
 /**
  * Enables zooming with the mouse wheel.
@@ -45,6 +20,8 @@ export const enableScrollZoom = (canvas: fabric.Canvas) => {
     // Calculate zoom values around the cursor
     const zoomPoint = new fabric.Point(point.x, point.y);
     canvas.zoomToPoint(zoomPoint, zoom);
+
+    // Limit the viewport to the canvas size
     limitViewport(canvas);
 
     opt.e.preventDefault();
