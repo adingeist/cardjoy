@@ -4,6 +4,8 @@ import { CssBaseline } from '@mui/material';
 import theme from './theme'; // Import the custom theme
 import CanvasSidebar from './components/Canvas/Sidebar/Sidebar';
 import Canvas from './components/Canvas/Canvas';
+import { Provider as ReduxProvider } from 'react-redux';
+import store from './redux/store';
 
 const AppContainer = styled.div`
   display: flex;
@@ -12,21 +14,23 @@ const AppContainer = styled.div`
 
 const App: React.FC = () => {
   return (
-    <ThemeProvider theme={theme}>
-      <AppContainer>
-        <CssBaseline />
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            width: '100%',
-          }}
-        >
-          <CanvasSidebar />
-          <Canvas />
-        </div>
-      </AppContainer>
-    </ThemeProvider>
+    <ReduxProvider store={store}>
+      <ThemeProvider theme={theme}>
+        <AppContainer>
+          <CssBaseline />
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              width: '100%',
+            }}
+          >
+            <CanvasSidebar />
+            <Canvas />
+          </div>
+        </AppContainer>
+      </ThemeProvider>
+    </ReduxProvider>
   );
 };
 
