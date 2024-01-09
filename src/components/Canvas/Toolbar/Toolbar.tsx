@@ -10,6 +10,10 @@ import {
   getCursorMode,
   setCursorMode,
 } from '../../../redux/slices/editorSlice';
+import { useFabricJSEditor } from '../Editor';
+import { CIRCLE } from '../defaultShapes';
+import { fabric } from 'fabric';
+import { useEditor } from '../EditorContext';
 
 const StyledToolbar = styled('div')`
   display: flex;
@@ -20,6 +24,7 @@ const StyledToolbar = styled('div')`
 `;
 
 const Toolbar: React.FC = () => {
+  const { editor } = useEditor();
   const dispatch = useAppDispatch();
   const cursorMode = useAppSelector(getCursorMode);
 
@@ -27,13 +32,21 @@ const Toolbar: React.FC = () => {
     dispatch(setCursorMode(mode));
   }, []);
 
+  const onAddCircle = () => {
+    console.log('onAddCircle', editor);
+    const object = new fabric.Circle({
+      ...CIRCLE,
+    });
+    editor?.add(object);
+  };
+
   return (
     <StyledToolbar>
       <ToolbarButton
         title="Select"
         icon={<CursorIcon />}
         selected={cursorMode === 'select'}
-        onClick={() => handleSetCursorMode('select')}
+        onClick={() => onAddCircle()}
       />
       <ToolbarButton
         title="Move"
