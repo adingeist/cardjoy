@@ -169,7 +169,7 @@ const useFabricJSEditor = (
           obj.set({
             left: offsetX,
             top: offsetY,
-            fill: fillColor,
+            fill: 'red',
             stroke: strokeColor,
           });
           canvas.add(obj);
