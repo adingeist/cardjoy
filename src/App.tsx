@@ -6,6 +6,9 @@ import CanvasSidebar from './components/Canvas/Sidebar/Sidebar';
 import Canvas from './components/Canvas/Canvas';
 import { Provider as ReduxProvider } from 'react-redux';
 import store from './redux/store';
+import { EditorProvider } from './components/Canvas/EditorContext';
+import { useFabricJSEditor } from './components/Canvas/Editor';
+import EditorScreen from './components/EditorScreen';
 
 const AppContainer = styled.div`
   display: flex;
@@ -18,16 +21,7 @@ const App: React.FC = () => {
       <ThemeProvider theme={theme}>
         <AppContainer>
           <CssBaseline />
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              width: '100%',
-            }}
-          >
-            <CanvasSidebar />
-            <Canvas />
-          </div>
+          <EditorScreen />
         </AppContainer>
       </ThemeProvider>
     </ReduxProvider>

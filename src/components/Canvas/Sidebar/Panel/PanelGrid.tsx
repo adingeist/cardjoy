@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { DragEventHandler, useCallback } from 'react';
 import styled from 'styled-components';
 import { PANEL_PADDING } from '../../../../theme';
+import { useEditor } from '../../EditorContext';
+import { fabric } from 'fabric';
+import { useAppDispatch } from '../../../../hooks/useAppSelector';
+import { setDraggingSrc } from '../../../../redux/slices/editorSlice';
 
 interface PanelGridProps {
   columns?: number;
@@ -48,11 +52,45 @@ const StyledPanelItem = styled.img`
 
 const PanelGridItem: React.FC<PanelGridItemProps> = ({ src, alt }) => {
   const { columns } = useGridContext();
+  const { editor } = useEditor();
+  const dispatch = useAppDispatch();
+
+  const addShape = useCallback(() => {
+    if (!editor) return;
+    fabric.loadSVGFromURL(src, (objects, options) => {
+      const obj = fabric.util.groupSVGElements(objects, options);
+      obj.set({
+        left: editor.getWidth() / 2,
+        top: editor.getHeight() / 2,
+      });
+      editor.add(obj);
+      editor.setActiveObject(obj);
+      editor.requestRenderAll();
+    });
+  }, [editor, src]);
+
+  const handleDragStart: DragEventHandler = useCallback(
+    (e) => {
+      dispatch(setDraggingSrc(src));
+    },
+    [dispatch, src]
+  );
+
+  const handleDragEnd: DragEventHandler = useCallback(
+    (e) => {
+      dispatch(setDraggingSrc(null));
+    },
+    [dispatch]
+  );
 
   return (
     <StyledPanelItem
+      draggable
       src={src}
       alt={alt}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onClick={addShape}
       style={{
         marginRight: `${columns}px`,
         marginLeft: `${columns}px`,

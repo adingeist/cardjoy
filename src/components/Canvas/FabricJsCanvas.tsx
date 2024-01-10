@@ -9,7 +9,7 @@ import styled from 'styled-components';
 import { drawGrid } from './drawGrid';
 import { useTheme } from '@mui/material';
 import { enableScrollZoom } from './enableScrollZoom';
-import usePanning from './enablePanning';
+import { useEnableDrop } from './enableDrop';
 
 export interface Props {
   className?: string;
@@ -28,6 +28,8 @@ const FabricJSCanvas = ({ className, onReady }: Props) => {
   const theme = useTheme();
   const canvasEl = useRef(null);
   const canvasElParent = useRef<HTMLDivElement>(null);
+  const { enableDrop } = useEnableDrop();
+
   useEffect(() => {
     const canvas = new fabric.Canvas(canvasEl.current);
     const setCurrentDimensions = () => {
@@ -35,6 +37,8 @@ const FabricJSCanvas = ({ className, onReady }: Props) => {
       canvas.setWidth(canvasElParent.current?.clientWidth || 0);
       drawGrid(canvas, theme.palette.grey[200]);
       enableScrollZoom(canvas);
+      enableDrop(canvas);
+
       canvas.renderAll();
     };
     const resizeCanvas = () => {

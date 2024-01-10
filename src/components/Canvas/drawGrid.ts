@@ -12,12 +12,14 @@ export const drawGrid = (
       new fabric.Line([i * gridSize, 0, i * gridSize, height], {
         stroke: color,
         selectable: false,
+        hoverCursor: 'default',
       })
     );
     canvas.add(
       new fabric.Line([0, i * gridSize, width, i * gridSize], {
         stroke: color,
         selectable: false,
+        hoverCursor: 'default',
       })
     );
   }

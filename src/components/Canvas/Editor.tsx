@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { CIRCLE, FILL, LINE, RECTANGLE, STROKE, TEXT } from './defaultShapes';
 import styled from 'styled-components';
 import { drawGrid } from './drawGrid';
+import { useAppSelector } from '../../hooks/useAppSelector';
+import { getDraggingSrc } from '../../redux/slices/editorSlice';
 
 export interface FabricJSEditor {
   canvas: fabric.Canvas;
@@ -137,6 +139,8 @@ const useFabricJSEditor = (
     defaultStrokeColor || STROKE
   );
   const [selectedObjects, setSelectedObject] = useState<fabric.Object[]>([]);
+  const draggingSrc = useAppSelector(getDraggingSrc);
+
   useEffect(() => {
     const bindEvents = (canvas: fabric.Canvas) => {
       canvas.on('selection:cleared', () => {
@@ -152,11 +156,49 @@ const useFabricJSEditor = (
           setSelectedObject(e.selected);
         }
       });
+      canvas.on('drop', (e) => {
+        if (!draggingSrc) {
+          return;
+        }
+
+        const nativeEvent = e.e;
+        const { offsetX, offsetY } = nativeEvent;
+
+        fabric.loadSVGFromURL(draggingSrc, (objects, options) => {
+          const obj = fabric.util.groupSVGElements(objects, options);
+          obj.set({
+            left: offsetX,
+            top: offsetY,
+            fill: fillColor,
+            stroke: strokeColor,
+          });
+          canvas.add(obj);
+          canvas.setActiveObject(obj);
+          canvas.requestRenderAll();
+        });
+      });
+      window.addEventListener('keydown', (e) => {
+        const key = e.key;
+        if (key === 'Delete' || key === 'Backspace') {
+          canvas.getActiveObjects().forEach((object) => canvas.remove(object));
+          canvas.discardActiveObject();
+          canvas.renderAll();
+        }
+      });
     };
     if (canvas) {
       bindEvents(canvas);
     }
-  }, [canvas]);
+
+    return () => {
+      if (canvas) {
+        canvas.off('selection:cleared');
+        canvas.off('selection:created');
+        canvas.off('selection:updated');
+        canvas.off('drop');
+      }
+    };
+  }, [canvas, draggingSrc, fillColor, strokeColor]);
 
   return {
     selectedObjects,
@@ -165,15 +207,6 @@ const useFabricJSEditor = (
       setCanvas(canvasReady);
     },
     editor: canvas,
-    // ? buildEditor(
-    //     canvas,
-    //     fillColor,
-    //     strokeColor,
-    //     setFillColor,
-    //     setStrokeColor,
-    //     scaleStep
-    //   )
-    // : null,
   };
 };
 
